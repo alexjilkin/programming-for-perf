@@ -1,67 +1,89 @@
 #include <vector>
+#include <chrono>
+
 #pragma once
 
-namespace weekTwo {
+namespace weekTwo
+{
 
-template <size_t n>
-class BitArray {
-public:
+  class BitArray
+  {
+  public:
     std::vector<uint64_t> bits;
 
-    BitArray() {
+    BitArray(size_t n)
+    {
       bits.resize((n + 63) / 64);
     }
 
-    bool get(size_t pos) const {
-        if (pos >= bits.size() * 64) {
-            throw std::out_of_range("Bit position out of range.");
-        }
-        return (bits[pos / 64] >> (pos % 64)) & 1;
+    bool get(size_t pos) const
+    {
+      if (pos >= bits.size() * 64)
+      {
+        throw std::out_of_range("Bit position out of range.");
+      }
+      bool res = (bits[pos / 64] >> (pos % 64)) & 1;
+
+      return res;
     }
 
-    void set(size_t pos, bool value) {
-        if (pos >= bits.size() * 64) {
-            throw std::out_of_range("Bit position out of range.");
-        }
-        if (value) {
-            bits[pos / 64] |= 1ULL << (pos % 64);
-        } else {
-            bits[pos / 64] &= ~(1ULL << (pos % 64));
-        }
+    void set(size_t pos, bool value)
+    {
+      if (pos >= bits.size() * 64)
+      {
+        throw std::out_of_range("Bit position out of range.");
+      }
+      if (value)
+      {
+        bits[pos / 64] |= 1ULL << (pos % 64);
+      }
+      else
+      {
+        bits[pos / 64] &= ~(1ULL << (pos % 64));
+      }
     }
 
-    size_t sum(size_t pos) const {
-        size_t count = 0;
+    size_t sum(size_t pos) const
+    {
+      size_t count = 0;
 
-        for (size_t i = 0; i <= pos / 64; i++) {
-            if (i < pos / 64) {
-                count += __builtin_popcountll(bits[i]);
-            } else {
-                uint64_t mask = (1ULL << (pos % 64 + 1)) - 1; // Create a mask for the relevant bits
-                count += __builtin_popcountll(bits[i] & mask);
-            }
+      for (size_t i = 0; i <= pos / 64; i++)
+      {
+        if (i < pos / 64)
+        {
+          count += __builtin_popcountll(bits[i]);
         }
+        else
+        {
+          uint64_t mask = (1ULL << (pos % 64)) - 1;
+          count += __builtin_popcountll(bits[i] & mask);
+        }
+      }
 
-        return count;
+      return count;
     }
 
-    size_t location(size_t l) const {
-        size_t count = 0;
+    size_t location(size_t i) const
+    {
+      size_t left = 0;
+      size_t right = bits.size() * 64 - 1;
 
-        for (size_t i = 0; i <= bits.end() / 64; i++) {
-            if (bits[i] ) {
-                count += __builtin_popcountll(bits[i]);
-            } else {
-                uint64_t mask = (1ULL << (bits.end() % 64 + 1)) - 1; // Create a mask for the relevant bits
-                count += __builtin_popcountll(bits[i] & mask);
-            }
+      while (left < right)
+      {
+        size_t mid = left + (right - left) / 2;
 
-            if (count == l) {
-                return i;
-            }
+        if (sum(mid) < i)
+        {
+          left = mid + 1;
         }
+        else
+        {
+          right = mid;
+        }
+      }
 
-        return count;
+
+      return left ;
     }
-};
-} 
+  };
+}

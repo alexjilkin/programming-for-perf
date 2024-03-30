@@ -1,52 +1,98 @@
 #include <fstream>
+#include <iostream>
 #include <vector>
 #include <stdexcept>
-#include <iostream>
 #include "include/bit_array.hpp"
 
-int main(int argc, char const* argv[]) {
-    bool strerr_output = false;
-    int input_file = 0;
+int main(int argc, char *argv[])
+{
+    bool is_output_time = false;
+    bool is_sum = false;
+    bool is_location = false;
 
-    for (int i = 1; i < argc; ++i) {
-        std::string s(argv[i++]);
-        if (s.compare("-t") == 0) {
-        } else if (s.compare("-b") == 0) {
+    std::ifstream file_stream;  // File stream for reading from a file, if provided
+    std::istream *in = nullptr; // Pointer to abstract input stream
 
-        } else {
-          input_file = i - 1;
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "-t")
+        {
+            is_output_time = true;
         }
-      
+        else if (arg == "-s")
+        {
+            is_sum = true;
+        }
+        else if (arg == "-l")
+        {
+            is_location = true;
+        }
+        else if (arg[0] != '-')
+        {
+            file_stream.open(arg, std::ios::binary);
+            if (!file_stream.is_open())
+            {
+                std::cerr << "Error opening file: " << arg << std::endl;
+                return 1;
+            }
+            in = &file_stream;
+        }
     }
-    // if (input_file > 0) {
-      
-    // }
 
-    weekTwo::BitArray<200> ba;
-    std::ifstream in(argv[input_file], std::ios::binary);
+    if (!in)
+    {
+        in = &std::cin;
+    }
+
     std::uint64_t n, m, val;
 
-    // Read the first two 64-bit integers
-    if (!in.read(reinterpret_cast<char*>(&n), sizeof(n)) ||
-        !in.read(reinterpret_cast<char*>(&m), sizeof(m))) {
-        std::cerr << "Error reading n or m from the file." << std::endl;
+    if (!in->read(reinterpret_cast<char *>(&n), sizeof(n)) ||
+        !in->read(reinterpret_cast<char *>(&m), sizeof(m)))
+    {
+        std::cerr << "Error reading n or m from the input." << std::endl;
         return 1;
     }
 
-    // std::cout << n << std::endl;
-    // std::cout << m << std::endl;
+    weekTwo::BitArray ba(m);
 
-    for (uint64_t i = 1; i < n; ++i) {
-      if (!in.read(reinterpret_cast<char*>(&val), sizeof(val))) {
-          std::cerr << "Error reading value from the file." << std::endl;
-          break; // Exit the loop if we cannot read more (e.g., end of file)
-      }
-      ba.set(val, true);
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (std::uint64_t j = 0; j < n; ++j)
+    {
+        if (!in->read(reinterpret_cast<char *>(&val), sizeof(val)))
+        {
+            std::cerr << "Error reading value from the input." << std::endl;
+            break;
+        }
+        ba.set(val, true);
+    }
+    if (is_output_time == true)
+    {
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        std::cerr << (elapsed).count() << "\n";
     }
 
+    start = std::chrono::high_resolution_clock::now();
+    for (std::uint64_t k = 0; k < n; ++k)
+    {
+        if (!in->read(reinterpret_cast<char *>(&val), sizeof(val)))
+        {
+            std::cerr << "Error reading value from the input." << std::endl;
+            break;
+        }
 
-    std::cout << ba.get(3) << "\n";
-    std::cout << ba.get(4) << "\n";
-    std::cout << ba.sum(n) << "\n";
+        std::cout << (is_location ? ba.location(val) : is_sum ? ba.sum(val)
+                                                              : ba.get(val))
+                  << "\n";
+    }
+    if (is_output_time == true)
+    {
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        std::cerr << (elapsed).count() << "\n";
+    }
+
     return 0;
 }

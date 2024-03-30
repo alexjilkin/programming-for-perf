@@ -41,7 +41,7 @@ clean:
 # Tells make what to do when "make debug" is called.
 # Here we compile the binary with different flags to support debugging.
 debug: main.cpp $(HEADERS)
-	g++ $(CPPFLAGS) -DDEBUG -g -o main main.cpp
+	g++ $(CPPFLAGS) -fsanitize=address -DDEBUG -g -o main main.cpp
 
 # Generic rule that tells make that nothing needs to be done about c++ header files.
 %.hpp:
