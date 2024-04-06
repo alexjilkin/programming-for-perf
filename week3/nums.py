@@ -1,8 +1,10 @@
 import numpy as np
 import sys
 
+
 def output_help():
-    print("""
+    print(
+        """
 Generates benchmark data for problem sets 3 and 4 of programming for perfomance.
 
 Outputs either unsorted or unsorted data with or without index queries
@@ -23,8 +25,10 @@ Options:
 Example:
     python3 nums.py -r 1337 > data
         Generates a file called "data" using default values.
-    """)
+    """
+    )
     exit()
+
 
 def main(n, limit, sort, queries):
     a = np.random.randint(0, limit, size=n + 1, dtype=np.uint64)
@@ -36,7 +40,7 @@ def main(n, limit, sort, queries):
         a = np.random.randint(0, n, size=queries + 1, dtype=np.uint64)
         a[0] = queries
         sys.stdout.buffer.write(a)
-    
+
 
 if __name__ == "__main__":
     if "-h" in sys.argv or "help" in sys.argv:
