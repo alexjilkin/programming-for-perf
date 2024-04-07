@@ -7,21 +7,21 @@
 #include <ctime>
 #include <cstdlib>
 
-double getCpuTime() {
-    struct rusage usage;
-    if (getrusage(RUSAGE_SELF, &usage) == 0) {
-        double userTime = static_cast<double>(usage.ru_utime.tv_sec) + 
-                          static_cast<double>(usage.ru_utime.tv_usec) / 1e6;
-        double systemTime = static_cast<double>(usage.ru_stime.tv_sec) + 
-                            static_cast<double>(usage.ru_stime.tv_usec) / 1e6;
-        return userTime + systemTime;
-    }
-    return 0.0; // In case of an error, return 0
-}
+// double getCpuTime() {
+//     struct rusage usage;
+//     if (getrusage(RUSAGE_SELF, &usage) == 0) {
+//         double userTime = static_cast<double>(usage.ru_utime.tv_sec) + 
+//                           static_cast<double>(usage.ru_utime.tv_usec) / 1e6;
+//         double systemTime = static_cast<double>(usage.ru_stime.tv_sec) + 
+//                             static_cast<double>(usage.ru_stime.tv_usec) / 1e6;
+//         return userTime + systemTime;
+//     }
+//     return 0.0; // In case of an error, return 0
+// }
 
 int main(int argc, char *argv[]) {
-  auto startWallClock = std::chrono::high_resolution_clock::now();
-  double startCpuTime = getCpuTime();
+  // auto startWallClock = std::chrono::high_resolution_clock::now();
+  // double startCpuTime = getCpuTime();
 
   bool is_output_time = false;
   bool is_sorted = false;
@@ -36,8 +36,12 @@ int main(int argc, char *argv[]) {
       is_output_time = true;
     } else if (arg == "-s") {
       is_sorted = true;
-    } else if (arg == "-k") {
-      k = std::stoi(argv[i+1]);
+    } else if (arg == "k") {
+      k = std::stoi(argv[i+1]) + 1;
+      i++;
+    } 
+    else if (arg == "-k") {
+      k = std::stoi(argv[i+1]) + 1;
       i++;
     } else if (arg[0] != '-') {
       file_stream.open(arg, std::ios::binary);
@@ -90,13 +94,13 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (is_output_time) {
-      auto endWallClock = std::chrono::high_resolution_clock::now();
-      double endCpuTime = getCpuTime();
-      std::chrono::duration<double, std::milli> elapsedWallClock = endWallClock - startWallClock;
-      std::cout << "Elapsed wall-clock time: " << elapsedWallClock.count() << " ms\n";
-      std::cout << "Elapsed CPU time (user + system): " << (endCpuTime - startCpuTime) * 1000 << " ms\n";
-  }
+  // if (is_output_time) {
+  //     auto endWallClock = std::chrono::high_resolution_clock::now();
+  //     double endCpuTime = getCpuTime();
+  //     std::chrono::duration<double, std::milli> elapsedWallClock = endWallClock - startWallClock;
+  //     std::cout << "Elapsed wall-clock time: " << elapsedWallClock.count() << " ms\n";
+  //     std::cout << "Elapsed CPU time (user + system): " << (endCpuTime - startCpuTime) * 1000 << " ms\n";
+  // }
 
 }
 
