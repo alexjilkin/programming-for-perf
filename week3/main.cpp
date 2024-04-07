@@ -1,11 +1,11 @@
-#include "./VByte.hpp"
+#include "include/VByte.hpp"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
 #include <functional>
 #include <ctime>
-
+#include <cstdlib>
 
 double getCpuTime() {
     struct rusage usage;
@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
 
   bool is_output_time = false;
   bool is_sorted = false;
+  size_t k = 7;
 
   std::ifstream file_stream; 
   std::istream *in = nullptr;
@@ -35,6 +36,9 @@ int main(int argc, char *argv[]) {
       is_output_time = true;
     } else if (arg == "-s") {
       is_sorted = true;
+    } else if (arg == "-k") {
+      k = std::stoi(argv[i+1]);
+      i++;
     } else if (arg[0] != '-') {
       file_stream.open(arg, std::ios::binary);
       if (!file_stream.is_open()) {
@@ -67,8 +71,9 @@ int main(int argc, char *argv[]) {
 
   for (std::uint64_t j = 0; j < n; ++j) {
     in->read(reinterpret_cast<char *>(&val), sizeof(val));
-    auto vb = weekThree::VByte();
-    blocksCount += vb.encode(getValue(val));
+    auto vb = weekThree::VByte(k);
+    vb.encode(getValue(val));
+    blocksCount += vb.size();
     vbs.push_back(vb);
   }
 
@@ -85,10 +90,13 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  auto endWallClock = std::chrono::high_resolution_clock::now();
-  double endCpuTime = getCpuTime();
-  std::chrono::duration<double, std::milli> elapsedWallClock = endWallClock - startWallClock;
-  std::cout << "Elapsed wall-clock time: " << elapsedWallClock.count() << " ms\n";
-  std::cout << "Elapsed CPU time (user + system): " << (endCpuTime - startCpuTime) * 1000 << " ms\n";
+  if (is_output_time) {
+      auto endWallClock = std::chrono::high_resolution_clock::now();
+      double endCpuTime = getCpuTime();
+      std::chrono::duration<double, std::milli> elapsedWallClock = endWallClock - startWallClock;
+      std::cout << "Elapsed wall-clock time: " << elapsedWallClock.count() << " ms\n";
+      std::cout << "Elapsed CPU time (user + system): " << (endCpuTime - startCpuTime) * 1000 << " ms\n";
+  }
+
 }
 
