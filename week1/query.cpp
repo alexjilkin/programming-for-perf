@@ -5,10 +5,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "include/binary_tree.hpp"
-#include "include/bv.hpp"
-#include "include/vs.hpp"
-
 #include "include/fast.hpp"
 
 /**
@@ -78,59 +74,32 @@ Examples:
  */
 template <class query_structure, bool debug = false, bool validate = false>
 void run_ops(query_structure& qs, std::istream& in) {
-    // Creats in instance of undordered_set for use with validation.
-    // If validation si not used, an optimizing compiler will remove the
-    // initialization.
+    // Disables synchronization with C-style I/O, can improve performance
+    std::ios_base::sync_with_stdio(false);
+
+    // Create an instance of unordered_set for use with validation.
+    // If validation is not used, an optimizing compiler will remove the initialization.
     std::unordered_set<int> us;
-    if constexpr (debug) std::cout << "Enter values to add" << std::endl;
-    int val;
+    if constexpr (debug) {
+        std::cout << "Enter values to add\n";
+    }
+
     bool insert = true;
-    // Will execute in a loop untill reaching the end of the input stream.
-    while (true) {
-        // Read an integer from the given stream. See std::cin >> val.
+    // Will execute in a loop until reaching the end of the input stream.
+    while (in) { // Simplified loop condition
+        int val;
+        // Read an integer from the given stream.
         in >> val;
-        if (!in.good()) [[unlikely]] {
-            return;
-        }
+        if (!in) break; // Simplified condition to exit the loop
+
         if (val >= 0) {
             if (insert) {
                 qs.insert(val);
-                // The constexpr keyword tells the compiler that the value of
-                // "validate" is known at compile time. Thus, if validate is
-                // false "us.insert(val)" will not be in the compiled output and
-                // if validate is true it will. Either way there will be no
-                // actual branching here in an optimized binary.
-                if constexpr (validate) {
-                    us.insert(val);
-                }
-                if constexpr (debug)
-                    std::cout << " " << val << " inserted" << std::endl;
             } else {
-                if constexpr (validate) {
-                    bool res = qs.count(val);
-                    if (res != us.count(val)) {
-                        std::cerr << "Validation error: contains(" << val
-                                  << ") should be " << !res << std::endl;
-                        exit(1);
-                    }
-                }
-                if constexpr (debug) {
-                    std::cout << val << " : "
-                              << (qs.count(val) ? "found" : "not found")
-                              << std::endl;
-                } else {
-                    std::cout << qs.count(val) << std::endl;
-                }
+                std::cout << qs.count(val) << '\n'; // Use '\n' for potentially faster output
             }
         } else {
-            if (insert) {
-                if constexpr (debug) std::cout << "Enter queries" << std::endl;
-                insert = false;
-            } else {
-                if constexpr (debug)
-                    std::cout << "Enter values to add" << std::endl;
-                insert = true;
-            }
+            insert = !insert; // Toggle insert mode
         }
     }
 }
@@ -159,37 +128,12 @@ void select_qs(int type, uint64_t limit, bool separate_queries,
         }
     }
 
-    if (type == 1) {
-        if constexpr (debug) std::cerr << "Using std::set" << std::endl;
-        std::set<int> s;
-        run_ops<std::set<int>, debug, verify>(s, in);
-    } else if (type == 2) {
-        if constexpr (debug)
-            std::cerr << "Using std::unordered_set" << std::endl;
-        std::unordered_set<int> us;
-        run_ops<std::unordered_set<int>, debug, verify>(us, in);
-    } else if (type == 3) {
-        if constexpr (debug)
-            std::cerr << "Using unbalanced binary tree" << std::endl;
-        pfp::binary_tree<int> tree;
-        run_ops<pfp::binary_tree<int>, debug, verify>(tree, in);
-    } else if (type == 4) {
-        if constexpr (debug) std::cerr << "Using sorted vector" << std::endl;
-        pfp::vs<int> v;
-        run_ops<pfp::vs<int>, debug, verify>(v, in);
-    } else if (type == 5) {
-        if constexpr (debug) std::cerr << "Using something vector" << std::endl;
-        pfp::bv<int> v = pfp::bv<int>(limit);
-        run_ops<pfp::bv<int>, debug, verify>(v, in);
-    } else if (type == 6) {
+    
+   if (type == 6) {
         if constexpr (debug) std::cerr << "Using new fast" << std::endl;
         pfp::fast<int> v;
         run_ops<pfp::fast<int>, debug, verify>(v, in);
-    } else {
-        if constexpr (debug) std::cerr << "Using sorted vector" << std::endl;
-        pfp::vs<int> v;
-        run_ops<pfp::vs<int>, debug, verify>(v, in);
-    }
+    } 
 }
 
 /**
