@@ -16,7 +16,7 @@ public:
     while (true) {
       uint64_t b = i % base;
       std::vector<bool> currentBlock(
-          k, false); // Initialize a block of size 'k' with false
+          k, false); 
 
       for (size_t bit = 0; bit < k - 1; ++bit) {
         currentBlock[bit] = (b >> bit) & 1;
