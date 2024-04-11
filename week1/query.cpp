@@ -11,7 +11,7 @@
  * Helper function to ouput usage information when the -h flag is detected
  */
 void help() {
-    std::cout << R"(
+  std::cout << R"(
 Program to test set data structures for positive ints.
 
 usage:
@@ -41,7 +41,7 @@ Examples:
    /usr/bin/time ./query -s -l 10000 limited_sorted.txt >> /dev/null
          Benchmark data with guaranteed sorted and limited input sequence.
          Allows program logic to select data structure type.)"
-              << std::endl;
+            << std::endl;
 }
 
 /**
@@ -73,145 +73,49 @@ Examples:
  * @param in    Input stream to use for retreaving operations.
  */
 template <class query_structure, bool debug = false, bool validate = false>
-void run_ops(query_structure& qs, std::istream& in) {
-    // Disables synchronization with C-style I/O, can improve performance
-    std::ios_base::sync_with_stdio(false);
-
-    // Create an instance of unordered_set for use with validation.
-    // If validation is not used, an optimizing compiler will remove the initialization.
-    std::unordered_set<int> us;
-    if constexpr (debug) {
-        std::cout << "Enter values to add\n";
-    }
-
-    bool insert = true;
-    // Will execute in a loop until reaching the end of the input stream.
-    while (in) { // Simplified loop condition
-        int val;
-        // Read an integer from the given stream.
-        in >> val;
-        if (!in) break; // Simplified condition to exit the loop
-
-        if (val >= 0) {
-            if (insert) {
-                qs.insert(val);
-            } else {
-                std::cout << qs.count(val) << '\n'; // Use '\n' for potentially faster output
-            }
-        } else {
-            insert = !insert; // Toggle insert mode
-        }
-    }
-}
-
-/**
- * Logic for determining data structure type if not given, along with code for
- * instantiating the query structure.
- */
-template <bool debug = false, bool verify = false>
-void select_qs(int type, uint64_t limit, bool separate_queries,
-               std::istream& in) {
-    // If type was not specified, try to select the best possible data structure
-    // based on other parameters. Note that this makes little sense without
-    // doing the exercises as there are only 3 types available initially. After
-    // task 2, type 4 should be fastest for separate queries, and after task 3,
-    // type 5 should be fastest for all cases but massively memory inefficient
-    // unless limits are specified. Type 6 is for the extra task due at the end
-    // of the course if you want extra points.
-    if (type == 0) {
-        if (limit > 0 && limit < 10e6) {
-            type = 5;
-        } else if (separate_queries) {
-            type = 4;
-        } else {
-            type = 6;
-        }
-    }
-
-    
-   if (type == 6) {
-        if constexpr (debug) std::cerr << "Using new fast" << std::endl;
-        pfp::fast<int> v;
-        run_ops<pfp::fast<int>, debug, verify>(v, in);
-    } 
-}
-
-/**
- * The main function parses command line parameters and calls select_qs
- * appropriately
- *
- * There are cleaner and more abstrac ways (as well as simpler ways) to do
- * command line parsing. The approach used here is common in c++ programs used
- * in research at least.
- */
-int main(int argc, char const* argv[]) {
-    // Change the line below to override default behaviour at CSES.
-    // CSES does not support command line parameters (yet).
-    // This mean a workaround is required to test custom data structures.
-    // For example to submit with the unbalanced binary tree "-t 3" by default
-    // you should change the line below to "int type = 3;".
-    int type = 0;
-    uint64_t limit = (uint32_t(1) << 31) - 1;
-    bool separate_queries = false;
-    int input_file = 0;
-    int verify = false;
-    int i = 1;
-    bool debug = false;
-    while (i < argc) {
-        std::string s(argv[i++]);
-        if (s.compare("-l") == 0) {
-            limit = std::stoull(argv[i++]);
-        } else if (s.compare("-s") == 0) {
-            separate_queries = true;
-        } else if (s.compare("-t") == 0) {
-            type = std::stoi(argv[i++]);
-        } else if (s.compare("-v") == 0) {
-            verify = true;
-        } else if (s.compare("-h") == 0) {
-            help();
-            exit(0);
-        } else if (s.compare("-d") == 0) {
-            debug = true;
-        } else {
-            input_file = i - 1;
-        }
-    }
-    if (debug)
-        std::cerr << "type = " << type << ", limit = " << limit
-                  << ", separate queries = " << separate_queries << std::endl;
-
-    // Both std::cin (console input) and std::ifstream (input file stream)
-    // inherit std::istream (input stream).
-    if (input_file > 0) {
-        std::ifstream in(argv[input_file]);
-        if (debug) {
-            if (verify) {
-                select_qs<true, true>(type, limit, separate_queries, in);
-            } else {
-                select_qs<true, false>(type, limit, separate_queries, in);
-            }
-        } else {
-            if (verify) {
-                select_qs<false, true>(type, limit, separate_queries, in);
-            } else {
-                select_qs<false, false>(type, limit, separate_queries, in);
-            }
-        }
+void run_ops(query_structure &qs, std::istream &in) {
+  std::ios_base::sync_with_stdio(false);
+  int val;
+  bool insert = true;
+  while (in >> val) {
+    if (val >= 0) {
+      if (insert) {
+        qs.insert(val);
+      } else {
+        std::cout << qs.count(val) << '\n';
+      }
     } else {
-        if (debug) {
-            if (verify) {
-                select_qs<true, true>(type, limit, separate_queries, std::cin);
-            } else {
-                select_qs<true, false>(type, limit, separate_queries, std::cin);
-            }
-        } else {
-            if (verify) {
-                select_qs<false, true>(type, limit, separate_queries, std::cin);
-            } else {
-                select_qs<false, false>(type, limit, separate_queries,
-                                        std::cin);
-            }
-        }
+      insert = !insert;
     }
-    return 0;
+  }
+}
+
+template <bool debug = false, bool verify = false>
+void select_qs(std::istream &in) {
+
+  pfp::fast<uint32_t> v;
+  run_ops<pfp::fast<uint32_t>, debug, verify>(v, in);
+}
+
+int main(int argc, char const *argv[]) {
+//   int type = 0;
+  int input_file = 0;
+  int i = 1;
+  while (i < argc) {
+    std::string s(argv[i++]);
+    if (s.compare("-t") == 0) {
+      i++;
+    } else {
+      input_file = i - 1;
+    }
+  }
+
+  if (input_file > 0) {
+    std::ifstream in(argv[input_file]);
+
+    select_qs<false, false>(in);
+  } else {
+    select_qs<false, false>(std::cin);
+  }
+  return 0;
 }

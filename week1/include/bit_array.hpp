@@ -7,7 +7,7 @@ namespace pfp {
 
 class BitArray {
 public:
-    std::vector<uint64_t> bits;
+    std::vector<uint_fast64_t> bits;
 
     explicit BitArray(size_t n) : bits((n + 63) / 64) {}
 
