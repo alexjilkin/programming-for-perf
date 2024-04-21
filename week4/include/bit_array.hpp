@@ -26,7 +26,10 @@ public:
 
   size_t sum(size_t pos) const {
     size_t count = 0;
-
+    
+    // if (pos == 0) {
+    //     return bits[0] >> 63;
+    // }
     for (size_t i = 0; i <= pos / 64; i++) {
       if (i < pos / 64) {
         count += __builtin_popcountll(bits[i]);
